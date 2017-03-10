@@ -1,0 +1,2 @@
+# MahjonggTest
+Just for fun

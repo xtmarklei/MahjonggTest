@@ -1,5 +1,6 @@
 ﻿# -*- coding: UTF-8 -*-
 import random
+import time
 from TestCalcMinCost import *
 suit_tup = ('dot','bamboo','character')
 name_arr = ('一筒','二筒','三筒','四筒','五筒','六筒','七筒','八筒','九筒','一条','二条','三条','四条','五条','六条','七条','八条','九条','一万','二万','三万','四万','五万','六万','七万','八万','九万')
@@ -17,7 +18,7 @@ def print_cards(cards):
     for i in a:
         b.append(Card.get_name(i))
     for i in range(0,len(a)):
-        str_b +=' ' + str(a[i]) + ':' + b[i]
+        str_b +=' ' + str(a[i]) + ':' + (b[i]).decode('UTF-8').encode('GBK') 
     print(str_b)
     
 class Card:
@@ -80,12 +81,8 @@ class Player:
         # Exposed / Concealed Kong
         self.kong_cards = []
         self.discard_cards = []
-    def get_handcard_arr(self):
-        tmp_arr=[]
-        for i in self.hand_cards:
-            tmp_arr.append(i.number)
-        tmp_arr.sort()
-        return tmp_arr
+        self.hand_number_list = []
+        self.hand_key_list = []
     def reset(self):
         self.hh_index = 0
         self.hand_cards = []
@@ -93,19 +90,38 @@ class Player:
         # Exposed / Concealed Kong
         self.kong_cards = []
         self.discard_cards = []
+        self.hand_number_list = []
+        self.hand_key_list = []
     def get_4cards(self):
         self.hh_index += 1
         self.hand_cards.extend(CardWalls.deal_card(4))
-        # self.hand_cards.sort()
-        #Seq.callnextpalyer()
+        # Seq.callnextpalyer()
     def get_card(self):
         self.hh_index+=1
         self.hand_cards.extend(CardWalls.deal_card(1))
-        # self.hand_cards.sort()
-        # if self.hh_index >= 5:
-            # Seq.discardtime()
-        # else:
-            # Seq.callnextpalyer()
+    def get_hand_list(self):
+        if len(self.hand_number_list) == 0:
+            for i in self.hand_cards:
+               self.hand_number_list.append(i.number)
+            self.hand_number_list.sort()
+        return self.hand_number_list
+    def cnt_key_cards(self):
+        tmp_hand_list = []
+        tmp_hand_key_list = []
+        key_cnt = 0
+        for i in self.hand_number_list:
+            if i in CardWalls.key_cards:
+                key_cnt += 1
+                tmp_hand_key_list.append(i)
+            else:
+                tmp_hand_list.append(i)
+        self.hand_number_list = tmp_hand_list
+        self.hand_key_list = tmp_hand_key_list
+        return key_cnt
+def release_key_cards(card_list):
+    for i in range(0,len(card_list)):
+        if card_list[i] in CardWalls.key_cards:
+            card_list.pop(i)
 
 def init():
     if len(players) == 4:
@@ -115,7 +131,7 @@ def init():
 
 def start():
     CardWalls.reset_cards()
-    CardWalls.print_yourself()
+    # CardWalls.print_yourself()
     for i in players:
         i.reset()
     # 1st step 4 cards * 3 times
@@ -125,18 +141,44 @@ def start():
     # 2nd step 1 card
     for p in players:
             p.get_card()
-    # 3nd get key card
+    # 3nd now is a test
+    # for p in players:
+    #         p.get_card()
+    # 4nd get key card
     CardWalls.get_keycard()
 
 init()
-start()
-for i in players:
-    print('player '+str(i.index)+'--->')
-    print_cards(i.hand_cards)
-    print(i.get_handcard_arr())
-    check_total_cost(i.get_handcard_arr())
-print('root : '+ str(CardWalls.root_card))
-print('keys : '+ str(CardWalls.key_cards))
-#print name_arr
+# start()
+# print 'root : '+ str(CardWalls.root_card)
+# print 'keys : '+ str(CardWalls.key_cards)
+
+# for i in players:
+#     print 'player '+str(i.index)+'--->'
+#     print_cards(i.hand_cards)
+#     check_total_cost(i.get_hand_list())
+#     print i.cnt_key_cards()
+#     print i.hand_number_list
+#     fan_list = check_total_cost(i.get_hand_list())
+cnt_test_times = 0
+print(time.asctime( time.localtime(time.time()) ))
+while(True):
+    cnt_test_times += 1
+    start()
+    # print 'root : '+ str(CardWalls.root_card)
+    # print 'keys : '+ str(CardWalls.key_cards)
+    tmk = 0
+    for i in players:
+        # print 'player '+str(i.index)+'--->'
+        # print_cards(i.hand_cards)
+        i.get_hand_list()
+        i.cnt_key_cards() # print i.cnt_key_cards()
+        # print i.hand_number_list
+        fan_list = check_total_cost(i.get_hand_list())
+        if (get_cost_for_all(fan_list) - i.cnt_key_cards()) <= 2:
+            tmk = 1
+    if tmk == 1:
+        break
+print(cnt_test_times)
+print(time.asctime( time.localtime(time.time()) ))
 
 

@@ -2,8 +2,9 @@
 import random
 import time
 from TestCalcMinCost import *
-suit_tup = ('dot','bamboo','character')
-name_arr = ('一筒','二筒','三筒','四筒','五筒','六筒','七筒','八筒','九筒','一条','二条','三条','四条','五条','六条','七条','八条','九条','一万','二万','三万','四万','五万','六万','七万','八万','九万')
+suit_tup = ('dot', 'bamboo', 'character')
+name_arr = ('一筒', '二筒', '三筒', '四筒', '五筒', '六筒', '七筒', '八筒', '九筒', '一条', '二条', '三条', '四条',
+            '五条', '六条', '七条', '八条', '九条', '一万', '二万', '三万', '四万', '五万', '六万', '七万', '八万', '九万')
 players = []
 def print_cards(cards):
     a = []
@@ -102,7 +103,7 @@ class Player:
     def get_hand_list(self):
         if len(self.hand_number_list) == 0:
             for i in self.hand_cards:
-               self.hand_number_list.append(i.number)
+                self.hand_number_list.append(i.number)
             self.hand_number_list.sort()
         return self.hand_number_list
     def cnt_key_cards(self):
@@ -140,10 +141,10 @@ def start():
             p.get_4cards()
     # 2nd step 1 card
     for p in players:
-            p.get_card()
+        p.get_card()
     # 3nd now is a test
     # for p in players:
-    #         p.get_card()
+    #     p.get_card()
     # 4nd get key card
     CardWalls.get_keycard()
 

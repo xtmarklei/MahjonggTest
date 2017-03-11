@@ -229,29 +229,12 @@ print('Here We Go !--------------->>>>>>>>>>>>>>>>')
 
 print('KEY--->>>'+str(CardWalls.key_card))
 print(len(CardWalls.cards))
-# for i in players:
-#     print_cards(i.hand_cards)
-#     print(i.cnt_key_cards())
-#     fan_list = check_total_cost(i.hand_cards)
-#     print(str(fan_list)+' Cost = '+str(get_cost_for_all(fan_list)))
 
 play_loop()
 
 # cnt_test_times = 0
 print(time.asctime( time.localtime(time.time()) ))
-# while(True):
-#     cnt_test_times += 1
-#     start()
-#     tmk = 0
-#     for i in players:
-#         i.get_hand_list()
-#         i.cnt_key_cards()
-#         fan_list = check_total_cost(i.get_hand_list())
-#         if (get_cost_for_all(fan_list) - i.cnt_key_cards()) <= 2:
-#             tmk = 1
-#     if tmk == 1:
-#         break
-# print(cnt_test_times)
+
 print(time.asctime( time.localtime(time.time()) ))
 
 

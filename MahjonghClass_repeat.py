@@ -3,16 +3,16 @@ import random
 import time
 from CalcMinCost_repeat import *
 suit_tup = ('dot', 'bamboo', 'character')
-name_arr = ('一', '二', '三', '四', '五', '六', '七', '八', '九',
-            '一', '二', '三', '四', '五', '六', '七', '八', '九',
-            '一', '二', '三', '四', '五', '六', '七', '八', '九')
+name_value_arr = ('一', '二', '三', '四', '五', '六', '七', '八', '九')
+name_suit_arr  = ('筒','条','万')
+
 players = []
 player_header = 0
 play_seq = []
 def print_cards(cards_list):
     str_cards_with_index = ''
     for i in range(0,len(cards_list)):
-        str_cards_with_index += str(cards_list[i]) + ':' + (name_arr[cards_list[i]]).decode('UTF-8').encode('GBK') + ' '
+        str_cards_with_index += str(cards_list[i]) + ':' + name_value_arr[Card.get_value(cards_list[i])] + name_suit_arr[Card.get_suit(cards_list[i])] + ' '
         if i%16==15:
             print(str_cards_with_index)
             str_cards_with_index = ''
@@ -98,7 +98,7 @@ class Player:
         for i in self.hand_cards:
             if i == CardWalls.key_card:
                 self.key_cnt += 1
-        self.hand_cards = filter(lambda x:x !=CardWalls.key_card,self.hand_cards)
+        self.hand_cards = list(filter(lambda x:x !=CardWalls.key_card,self.hand_cards))
     def cnt_key_cards(self):
         self.release_key_cards()
         return self.key_cnt
@@ -119,7 +119,7 @@ class Player:
         return -1
     def do_concealed_kong(self,card_idx):
         self.kong_cards.append(card_idx)
-        self.hand_cards = filter(lambda x:x !=card_idx,self.hand_cards)
+        self.hand_cards = list(filter(lambda x:x !=card_idx,self.hand_cards))
     # this for auto play select the min cost card
     def select_min_cost_list(self):
         tmp_last_card = -1
@@ -182,6 +182,12 @@ def start():
     # 5th step cnt keys for all
     for idx in play_seq:
         players[idx].release_key_cards()
+    
+    print('Here We Go !--------------->>>>>>>>>>>>>>>>')
+    print('KEY--->>>'+str(CardWalls.key_card))
+    print(len(CardWalls.cards))
+    # 6th enter play_loop
+    play_loop()
 
 def get_next_player(idx):
     return (idx+1)%4
@@ -195,6 +201,7 @@ def play_loop():
             current_cost = get_cost_for_all(check_total_cost(players[current_player].hand_cards))
             print(str(players[current_player].hand_cards) + ' current cost = ' + str(current_cost) 
                 + ' key_cnt = ' + str(players[current_player].key_cnt))
+            print_cards(players[current_player].hand_cards)
             break
         # check kong
         kong_rst_card = players[current_player].check_concealed_kong()
@@ -225,12 +232,6 @@ def play_loop():
 init() #init only do one time
 
 start()
-print('Here We Go !--------------->>>>>>>>>>>>>>>>')
-
-print('KEY--->>>'+str(CardWalls.key_card))
-print(len(CardWalls.cards))
-
-play_loop()
 
 # cnt_test_times = 0
 print(time.asctime( time.localtime(time.time()) ))

@@ -9,6 +9,9 @@ name_suit_arr  = ('筒','条','万')
 players = []
 player_header = 0
 play_seq = []
+kong_flag = 0 # flag for kong
+pong_flag = 0 # flag for pong, if is 1 means last loop is pong couldn't win directly.
+discard_key_flag = 0 # flag for someone discard key card, if is 1 means only can win by himself.
 def print_cards(cards_list):
     str_cards_with_index = ''
     for i in range(0,len(cards_list)):
@@ -103,6 +106,8 @@ class Player:
         self.release_key_cards()
         return self.key_cnt
     def check_self_win(self):
+        if pong_flag == 1: # last loop is self pong, so couldn't win
+            return False
         win_cost = get_cost_for_all(check_total_cost(self.hand_cards))
         return self.key_cnt >= win_cost
     def check_concealed_kong(self):
@@ -147,7 +152,28 @@ class Player:
         self.hand_cards.remove(idx)
         self.discard_cards.append(idx)
         return idx
-
+    # if has key card couldn't win
+    # if someone had discard key card couldn't win
+    def check_win_after_discard(self,idx):
+        global discard_key_flag
+        if discard_key_flag == 1:
+            return False
+        if self.key_cnt > 0:
+            return False
+        pong_flag = 0
+        return False
+    def check_kong_after_discard(self,idx):
+        return False
+    def check_pong_after_discard(self,idx):
+        return False
+    def compare_cost_for_kong_pong(self,idx):
+        return 1
+    def check_cost_for_pong(self,idx):
+        return 0
+    def do_exposed_kong(self,idx):
+        return
+    def do_action_pong(self,idx):
+        return
 def init():
     global player_header
     global players
@@ -160,6 +186,7 @@ def init():
 
 def start():
     global play_seq
+    global player_header
     CardWalls.reset_cards()
     CardWalls.print_yourself()
     play_seq = []
@@ -191,8 +218,63 @@ def start():
 
 def get_next_player(idx):
     return (idx+1)%4
+# after discard check for other players win, pong or kong
+# normal return 0 means will do next loop
+# if return -1 means someone win the game and game over
+# if return -2 means CardWall is empty
+def check_win_pong_kong(player_index,discard_card):
+    global current_player
+    global pong_flag
+    global kong_flag
+    win_end_flag = 0
+    for i in range(0,3):
+        c_idx = (player_index+i+1)%4
+        if players[c_idx].check_win_after_discard(discard_card):
+            print('Player '+str(player_index) + ' lost &' + ' Player ' +str(c_idx) +' Win !!!!')
+            win_end_flag += 1
+    if win_end_flag >= 1:
+        return -1
+    for i in range(0,3):
+        c_idx = (player_index+i+1)%4
+        # if CardWall.cards empty couldn't kong !
+        if players[c_idx].check_kong_after_discard(discard_card) and len(CardWalls.cards) > 0:
+            pong_vs_kong = players[c_idx].compare_cost_for_kong_pong(discard_card)
+            if pong_vs_kong == 1: # if pong cost < kong cost then do action pong
+                players[c_idx].do_action_pong(discard_card)
+                current_player = c_idx
+                pong_flag = 1
+                return 0
+            elif pong_vs_kong == -1: # if pong cost >= kong cost then do action kong
+                players[c_idx].do_exposed_kong(discard_card)
+                players[c_idx].get_reversed_card() # get a revert card then return
+                current_player = c_idx
+                kong_flag = 1
+                return 0
+            else: # pong cost & kong cost > no action then do nothing
+                pass
+    for i in range(0,3):
+        c_idx = (player_index+i+1)%4
+        pong_cost = players[c_idx].check_cost_for_pong(discard_card)
+        if pong_cost == 1: # if pong cost < no action then pong
+            players[c_idx].do_action_pong(discard_card)
+            current_player = c_idx
+            pong_flag = 1
+            return 0
+        else: # pong cost > no action then do nothing
+            pass
+    if len(CardWalls.cards) == 0:
+        print('CardWall.card empty Game over !!!!!!!')
+        return -2
+    # nothing happend go next player
+    print(current_player)
+    next_player = get_next_player(current_player)
+    current_player = next_player
+    players[current_player].get_card()
+    players[current_player].release_key_cards()
+    return 0
 
 def play_loop():
+    global current_player
     current_player = player_header
     while(True):
         # check win
@@ -220,22 +302,19 @@ def play_loop():
         players[current_player].discard_by_idx(intent_discard_card)
         # need check other 3 players
         # check_win_pong_kong(current_player,discard_card) return nextplayer_index, if != -1 continue
-
-        if len(CardWalls.cards) == 0:
-            print('CardWall.card empty Game over !!!!!!!')
+        play_flag = check_win_pong_kong(current_player,intent_discard_card)
+        if play_flag == -1:
+            break # game over
+        elif play_flag == -2:
             break
-        # nothing happend go next player
-        current_player = get_next_player(current_player)
-        players[current_player].get_card()
-        players[current_player].release_key_cards()
 
 init() #init only do one time
 
 start()
 
 # cnt_test_times = 0
-print(time.asctime( time.localtime(time.time()) ))
+# print(time.asctime( time.localtime(time.time()) ))
 
-print(time.asctime( time.localtime(time.time()) ))
+# print(time.asctime( time.localtime(time.time()) ))
 
 

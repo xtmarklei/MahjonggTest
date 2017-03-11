@@ -181,7 +181,7 @@ def start():
     CardWalls.get_keycard()
     # 5th step cnt keys for all
     for idx in play_seq:
-        players[idx].get_card()
+        players[idx].release_key_cards()
 
 def get_next_player(idx):
     return (idx+1)%4
@@ -192,22 +192,35 @@ def play_loop():
         # check win
         if players[current_player].check_self_win():
             print('player '+str(current_player) + ' win the game !!!!!!!!!!!!!!!!!')
+            current_cost = get_cost_for_all(check_total_cost(players[current_player].hand_cards))
+            print(str(players[current_player].hand_cards) + ' current cost = ' + str(current_cost) 
+                + ' key_cnt = ' + str(players[current_player].key_cnt))
             break
         # check kong
         kong_rst_card = players[current_player].check_concealed_kong()
         if kong_rst_card >= 0 and len(CardWalls.cards) > 0: # if CardWall.cards empty couldn't kong ! 
-            print('player '+str(current_player)+ 'kong ' + kong_rst_card)
+            print('player '+str(current_player)+ ' kong ' + str(kong_rst_card))
             players[current_player].do_concealed_kong(kong_rst_card)
             players[current_player].get_reversed_card()
             continue
+
+        # debug
+        current_cost = get_cost_for_all(check_total_cost(players[current_player].hand_cards))
+        print(str(players[current_player].hand_cards) + ' current cost = ' + str(current_cost) + ' key_cnt = ' + str(players[current_player].key_cnt))
+
         # here no action need to discard
-        
+        intent_discard_card = players[current_player].get_random_min_discard()
+        players[current_player].discard_by_idx(intent_discard_card)
+        # need check other 3 players
+        # check_win_pong_kong(current_player,discard_card) return nextplayer_index, if != -1 continue
 
         if len(CardWalls.cards) == 0:
             print('CardWall.card empty Game over !!!!!!!')
+            break
         # nothing happend go next player
         current_player = get_next_player(current_player)
         players[current_player].get_card()
+        players[current_player].release_key_cards()
 
 init() #init only do one time
 
@@ -216,11 +229,14 @@ print('Here We Go !--------------->>>>>>>>>>>>>>>>')
 
 print('KEY--->>>'+str(CardWalls.key_card))
 print(len(CardWalls.cards))
-for i in players:
-    print_cards(i.hand_cards)
-    print(i.cnt_key_cards())
-    fan_list = check_total_cost(i.hand_cards)
-    print(str(fan_list)+' Cost = '+str(get_cost_for_all(fan_list)))
+# for i in players:
+#     print_cards(i.hand_cards)
+#     print(i.cnt_key_cards())
+#     fan_list = check_total_cost(i.hand_cards)
+#     print(str(fan_list)+' Cost = '+str(get_cost_for_all(fan_list)))
+
+play_loop()
+
 # cnt_test_times = 0
 print(time.asctime( time.localtime(time.time()) ))
 # while(True):
